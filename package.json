@@ -1,0 +1,41 @@
+{
+  "name": "phaser-ecs",
+  "version": "0.0.2",
+  "description": "An ECS implementation for phaser",
+  "author": "Wouter Commandeur <wouter@ctlaltdel.nl>",
+  "license": "MIT",
+  "homepage": "https://github.com/woutercommandeur/phaser-ecs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/woutercommandeur/phaser-ecs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/woutercommandeur/phaser-ecs/issues"
+  },
+  "private": true,
+  "keywords": [
+    "phaser",
+    "html5",
+    "ecs"
+  ],
+  "dependencies": {
+    "makrjs": "0.1.1-snapshot"
+  },
+  "devDependencies": {
+    "browserify": "^5.11.1",
+    "event-stream": "^3.1.7",
+    "gulp": "^3.8.8",
+    "gulp-bump": "^0.1.11",
+    "gulp-connect": "^2.2.0",
+    "gulp-git": "^0.5.2",
+    "gulp-jshint": "^1.8.4",
+    "gulp-util": "^3.0.1",
+    "jshint-summary": "^0.4.0",
+    "vinyl-source-stream": "^0.1.1",
+    "watchify": "^1.0.2"
+  },
+  "main": "./src/index.js",
+  "browser": {
+    "./src/index.js": "./src/browser.js"
+  }
+}

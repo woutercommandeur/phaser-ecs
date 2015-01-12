@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bunnies</title>
+<style>
+* {
+    padding: 0;
+    margin: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+#controls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font: 13px sans-serif;
+    color: white;
+    text-shadow: 0 0 1px #fff;
+}
+
+kbd {
+    border: 1px solid #fff;
+    border-radius: 3px;
+    background: #ddd;
+    padding: 4px;
+    color: black;
+}
+
+p {
+    margin: 16px 10px;
+}
+</style>
+<script src="../lib/phaser.js" type="text/javascript"></script>
+<script src="../lib/phaser-ecs.js" type="text/javascript"></script>
+<script src="js/components.js" type="text/javascript"></script>
+<script src="js/systems.js" type="text/javascript"></script>
+<script src="js/main.js" type="text/javascript"></script>
+</head>
+<body>
+    <div id="controls">
+        <p><kbd>SPACE</kbd> Add 10 bunnies</p>
+    </div>
+</body>
+</html>
