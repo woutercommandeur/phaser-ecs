@@ -1,6 +1,6 @@
 {
   "name": "phaser-ecs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "An ECS implementation for phaser",
   "author": "Wouter Commandeur <wouter@ctlaltdel.nl>",
   "license": "MIT",
