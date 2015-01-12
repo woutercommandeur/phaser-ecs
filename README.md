@@ -18,6 +18,7 @@ Either copy the examples folder to the webroot of your webserver or run the gulp
 To run the task after cloning this repo:
 
 npm install
+
 gulp examples
 
 Then point your browser to http://localhost:9000/ and you should see a bunnies and invaders folder.
