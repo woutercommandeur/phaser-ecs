@@ -36,14 +36,856 @@ ECS.prototype.destroy = function () {
     // Do destruction of our own here
 };
 
-},{"./world":5}],2:[function(require,module,exports){
-(function (global){
-(function(){function a(b){if(b)for(var c in b)b.hasOwnProperty(c)&&(a[c]=b[c])}function b(a){for(var b=this._length=Math.ceil(a/32),c=this._words=new Array(b);b--;)c[b]=0}function c(){this._bits=0}function d(d,e){this._id=e,this._world=d,this._alive=!0,this._waitingForRefresh=!1,this._waitingForRemoval=!1,this._componentMask=a.MAX_COMPONENTS<=32?new c:new b(a.MAX_COMPONENTS),this._groupMask=a.MAX_GROUPS<=32?new c:new b(a.MAX_GROUPS),this._systemMask=a.MAX_SYSTEMS<=32?new c:new b(a.MAX_SYSTEMS)}function e(){this._systems=[],this._nextEntityID=0,this._nextGroupId=0,this._groups=[],this._groupIDs={},this._alive=[],this._dead=[],this._removed=[],this._refreshed=[],this._componentBags=[]}function f(){this._componentMask=a.MAX_COMPONENTS<=32?new c:new b(a.MAX_COMPONENTS),this._entities=[],this._world=null,this.enabled=!0}function g(){f.call(this)}a.MAX_COMPONENTS=32,a.MAX_GROUPS=32,a.MAX_SYSTEMS=32;var h=[];b.prototype.set=function(a,b){var c=a/32|0,d=a-32*c;b?this._words[c]|=1<<d:this._words[c]&=~(1<<d)},b.prototype.get=function(a){var b=a/32|0,c=a-32*b;return!!(this._words[b]&1<<c)},b.prototype.reset=function(){for(var a=this._words,b=this._length;b--;)a[b]=0},b.prototype.contains=function(a){var b=this._words,c=this._length;if(c!=a._length)return!1;for(;c--;)if((b[c]&a._words[c])!=a._words[c])return!1;return!0},c.prototype.set=function(a,b){b?this._bits|=1<<a:this._bits&=~(1<<a)},c.prototype.get=function(a){return!!(this._bits&1<<a)},c.prototype.reset=function(){this._bits=0},c.prototype.contains=function(a){return(this._bits&a._bits)==a._bits},d.prototype.get=function(a){return this._world._getComponent(this,a)},d.prototype.add=function(a,b){this._world._addComponent(this,a,b)},d.prototype.remove=function(a){this._world._removeComponent(this,a)},d.prototype.clear=function(){this._world._removeComponents(this)},d.prototype.kill=function(){this._world.kill(this)},Object.defineProperty(d.prototype,"id",{get:function(){return this._id}}),Object.defineProperty(d.prototype,"alive",{get:function(){return this._alive}}),e.prototype.registerSystem=function(a){if(this._systems.indexOf(a)>=0)throw"Cannot register a system twice";this._systems.push(a),a._world=this,a.onRegistered()},e.prototype.create=function(){var a;return this._dead.length>0?(a=this._dead.pop(),a._alive=!0):a=new d(this,this._nextEntityID++),this._alive.push(a),a},e.prototype.kill=function(a){a._waitingForRemoval||(a._waitingForRemoval=!0,this._removed.push(a))},e.prototype.refresh=function(a){a._waitingForRefresh||(a._waitingForRefresh=!0,this._refreshed.push(a))},e.prototype.update=function(a){this.loopStart();for(var b=this._systems,c=0,d=b.length;d>c;c++)b[c].update(a)},e.prototype.loopStart=function(){var a;for(a=this._removed.length;a--;)this._removeEntity(this._removed[a]);for(this._removed.length=0,a=this._refreshed.length;a--;)this._refreshEntity(this._refreshed[a]);this._refreshed.length=0},e.prototype.addToGroup=function(a,b){var c,d=this._groupIDs[b];void 0===d?(d=this._groupIDs[b]=this._nextGroupId++,c=this._groups[d]=[]):c=this._groups[d],a._groupMask.get(d)||(a._groupMask.set(d,1),c.push(a))},e.prototype.removeFromGroup=function(a,b){var c=this._groupIDs[b];if(void 0!==c){var d=this._groups[c];a._groupMask.get(c)&&(a._groupMask.set(c,0),d[d.indexOf(a)]=d[d.length-1],d.pop())}},e.prototype.removeFromGroups=function(a){for(var b=this._nextGroupId;b--;)if(a._groupMask.get(b)){var c=this._groups[b];c[c.indexOf(a)]=c[c.length-1],c.pop()}a._groupMask.reset()},e.prototype.getEntitiesByGroup=function(a){var b=this._groupIDs[a];return void 0!==b?this._groups[b]:h},e.prototype.isInGroup=function(a,b){var c=this._groupIDs[b];return void 0!==c&&a._groupMask.get(c)},e.prototype._refreshEntity=function(a){a._waitingForRefresh=!1;for(var b=this._systems,c=0,d=b.length;d>c;c++){var e=a._systemMask.get(c),f=a._componentMask.contains(b[c]._componentMask);e&&!f?(b[c]._removeEntity(a),a._systemMask.set(c,0)):!e&&f&&(b[c]._addEntity(a),a._systemMask.set(c,1))}},e.prototype._removeEntity=function(a){a._alive&&(a._waitingForRemoval=!1,a._alive=!1,this._alive[this._alive.indexOf(a)]=this._alive[this._alive.length-1],this._alive.pop(),this._dead.push(a),a._componentMask.reset(),this.removeFromGroups(a),this._refreshEntity(a))},e.prototype._getComponent=function(a,b){return a._componentMask.get(b)?this._componentBags[a._id][b]:null},e.prototype._addComponent=function(a,b,c){a._componentMask.set(c,1),this._componentBags[a._id]||(this._componentBags[a._id]=[]),this._componentBags[a._id][c]=b,this.refresh(a)},e.prototype._removeComponent=function(a,b){a._componentMask.set(b,0),this.refresh(a)},e.prototype._removeComponents=function(a){a._componentMask.reset(),this.refresh(a)},f.prototype.registerComponent=function(a){this._componentMask.set(a,1)},f.prototype.update=function(a){this.enabled&&(this.onBegin(),this.processEntities(this._entities,a),this.onEnd())},f.prototype.processEntities=function(){},f.prototype.onRegistered=function(){},f.prototype.onBegin=function(){},f.prototype.onEnd=function(){},f.prototype.onAdded=function(){},f.prototype.onRemoved=function(){},f.prototype._addEntity=function(a){var b=this._entities;b.indexOf(a)<0&&(b.push(a),this.onAdded(a))},f.prototype._removeEntity=function(a){var b=this._entities,c=b.indexOf(a);c>=0&&(b[c]=b[b.length-1],b.pop(),this.onRemoved(a))},Object.defineProperty(f.prototype,"world",{get:function(){return this._world}}),g.prototype=Object.create(f.prototype,{constructor:{value:g,enumerable:!1,writable:!0,configurable:!0}}),g.prototype.processEntities=function(a,b){var c=0,d=a.length;for(c=0;d>c;c++)this.process(a[c],b)},g.prototype.process=function(){},a.BitSet=b,a.FastBitSet=c,a.IteratingSystem=g,a.System=f,a.World=e;var i={"boolean":!1,"function":!0,object:!0,number:!1,string:!1,undefined:!1},j=i[typeof window]&&window||this,k=i[typeof global]&&global;!k||k.global!==k&&k.window!==k||(j=k),"function"==typeof define&&"object"==typeof define.amd&&define.amd?define([],function(){return a}):i[typeof module]&&module.exports?module.exports=a:j.makr=a}).call(this);
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./world":12}],2:[function(require,module,exports){
+/**
+ * @class BitSet
+ * @constructor
+ * @param {Uint} size
+ */
+function BitSet(size) {
+  /**
+   * @private
+   * @property {Uint} _length
+   */
+  var length = this._length = Math.ceil(size / 32);
+
+  /**
+   * @private
+   * @property {Array} _words
+   */
+  var words = this._words = new Array(length);
+
+  // Create empty words
+  while (length--) {
+    words[length] = 0;
+  }
+}
+
+/**
+ * @method set
+ * @param {Uint} index
+ * @param {Boolean} value
+ */
+BitSet.prototype.set = function(index, value) {
+  var wordOffset = index / 32 | 0;
+  var bitOffset = index - wordOffset * 32;
+
+  if (value) {
+    this._words[wordOffset] |= 1 << bitOffset;
+  } else {
+    this._words[wordOffset] &= ~(1 << bitOffset);
+  }
+};
+
+/**
+ * @method get
+ * @param  {Uint} index
+ * @return {Boolean}
+ */
+BitSet.prototype.get = function(index) {
+  var wordOffset = index / 32 | 0;
+  var bitOffset = index - wordOffset * 32;
+
+  return !!(this._words[wordOffset] & (1 << bitOffset));
+};
+
+/**
+ * @method reset
+ */
+BitSet.prototype.reset = function() {
+  var words = this._words;
+  var i = this._length;
+
+  while (i--) {
+    words[i] = 0;
+  }
+};
+
+/**
+ * @method contains
+ * @param  {BitSet} other
+ * @return {Boolean}
+ */
+BitSet.prototype.contains = function(other) {
+  var words = this._words;
+  var i = this._length;
+
+  if (i != other._length) {
+    return false;
+  }
+
+  while (i--) {
+    if ((words[i] & other._words[i]) != other._words[i]) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+module.exports = BitSet;
+
 },{}],3:[function(require,module,exports){
+var makr = require('./global');
+var BitSet = require('./bit_set');
+var FastBitSet = require('./fast_bit_set');
+
+/**
+ * @final
+ * @class Entity
+ * @constructor
+ */
+function Entity(world, id) {
+  /**
+   * @private
+   * @property {Uint} _id
+   */
+  this._id = id;
+
+  /**
+   * @private
+   * @property {World} _world
+   */
+  this._world = world;
+
+  /**
+   * @private
+   * @property {Boolean} _alive
+   */
+  this._alive = true;
+
+  /**
+   * @private
+   * @property {Boolean} _waitingForRefresh
+   */
+  this._waitingForRefresh = false;
+
+  /**
+   * @private
+   * @property {Boolean} _waitingForRemoval
+   */
+  this._waitingForRemoval = false;
+
+  /**
+   * @private
+   * @property {BitSet} _componentMask
+   */
+  this._componentMask = makr.MAX_COMPONENTS <= 32
+    ? new FastBitSet()
+    : new BitSet(makr.MAX_COMPONENTS);
+
+  /**
+   * @private
+   * @property {BitSet} _groupMask
+   */
+  this._groupMask = makr.MAX_GROUPS <= 32
+    ? new FastBitSet()
+    : new BitSet(makr.MAX_GROUPS);
+
+  /**
+   * @private
+   * @property {BitSet} _systemMask
+   */
+  this._systemMask = makr.MAX_SYSTEMS <= 32
+    ? new FastBitSet()
+    : new BitSet(makr.MAX_SYSTEMS);
+}
+
+/**
+ * @method get
+ * @param  {Uint} type
+ * @return {Object}
+ */
+Entity.prototype.get = function Entity_get(type) {
+  return this._world._getComponent(this, type);
+};
+
+/**
+ * @method add
+ * @param {Object} component
+ * @param {Uint} type
+ */
+Entity.prototype.add = function Entity_add(component, type) {
+  this._world._addComponent(this, component, type);
+};
+
+/**
+ * @method remove
+ * @param {Uint} type
+ */
+Entity.prototype.remove = function Entity_remove(type) {
+  this._world._removeComponent(this, type);
+};
+
+/**
+ * @method clear
+ */
+Entity.prototype.clear = function Entity_clear() {
+  this._world._removeComponents(this);
+};
+
+/**
+ * @method kill
+ */
+Entity.prototype.kill = function Entity_kill() {
+  this._world.kill(this);
+};
+
+/**
+ * @property {Uint} id
+ */
+Object.defineProperty(Entity.prototype, 'id', {
+  get: function() {
+    return this._id;
+  }
+});
+
+/**
+ * @property {Boolean} alive
+ */
+Object.defineProperty(Entity.prototype, 'alive', {
+  get: function() {
+    return this._alive;
+  }
+});
+
+module.exports = Entity;
+
+},{"./bit_set":2,"./fast_bit_set":4,"./global":5}],4:[function(require,module,exports){
+/**
+ * @class FastBitSet
+ * @constructor
+ */
+function FastBitSet() {
+  /**
+   * @private
+   * @property {Uint} _bits
+   */
+  this._bits = 0;
+}
+
+/**
+ * @method set
+ * @param {Uint} index
+ * @param {Boolean} value
+ */
+FastBitSet.prototype.set = function(index, value) {
+  if (value) {
+    this._bits |= 1 << index;
+  } else {
+    this._bits &= ~(1 << index);
+  }
+};
+
+/**
+ * @method get
+ * @param  {Uint} index
+ * @return {Boolean}
+ */
+FastBitSet.prototype.get = function(index) {
+  return !!(this._bits & (1 << index));
+};
+
+/**
+ * @method reset
+ */
+FastBitSet.prototype.reset = function() {
+  this._bits = 0;
+};
+
+/**
+ * @method contains
+ * @param  {FastBitSet} other
+ * @return {Boolean}
+ */
+FastBitSet.prototype.contains = function(other) {
+  return (this._bits & other._bits) == other._bits;
+};
+
+module.exports = FastBitSet;
+
+},{}],5:[function(require,module,exports){
+/**
+ * @module makr
+ * @param {Object} config
+ */
+function makr(config) {
+  if (config) {
+    for (var p in config) {
+      if (config.hasOwnProperty(p)) {
+        makr[p] = config[p];
+      }
+    }
+  }
+}
+
+module.exports = makr;
+
+},{}],6:[function(require,module,exports){
+var makr = require('./global')
+
+// Install default config
+makr.MAX_COMPONENTS = 32;
+makr.MAX_GROUPS = 32;
+makr.MAX_SYSTEMS = 32;
+
+// Register makr classes
+makr.BitSet = require('./bit_set');
+makr.FastBitSet = require('./fast_bit_set');
+makr.IteratingSystem = require('./iterating_system');
+makr.System = require('./system');
+makr.World = require('./world');
+
+module.exports = makr;
+
+},{"./bit_set":2,"./fast_bit_set":4,"./global":5,"./iterating_system":7,"./system":8,"./world":9}],7:[function(require,module,exports){
+var System = require('./system');
+
+/**
+ * @class IteratingSystem
+ * @extends {System}
+ * @constructor
+ */
+function IteratingSystem() {
+  System.call(this);
+}
+
+// Extend System
+IteratingSystem.prototype = Object.create(System.prototype, {
+  constructor: {
+    value: IteratingSystem,
+    enumerable: false,
+    writable: true,
+    configurable: true
+  }
+});
+
+/**
+ * @override
+ */
+IteratingSystem.prototype.processEntities = function(entities, elapsed) {
+  var i = 0;
+  var n = entities.length;
+
+  for (i = 0; i < n; i++) {
+    this.process(entities[i], elapsed);
+  }
+};
+
+/**
+ * @method process
+ * @param {Entity} entity
+ * @param {Float} elapsed
+ */
+IteratingSystem.prototype.process = function(entity, elapsed) {};
+
+module.exports = IteratingSystem;
+
+},{"./system":8}],8:[function(require,module,exports){
+var makr = require('./global');
+var BitSet = require('./bit_set');
+var FastBitSet = require('./fast_bit_set');
+
+/**
+ * A system that processes entities.
+ *
+ * @class System
+ * @constructor
+ */
+function System() {
+  /**
+   * @private
+   * @property {BitSet} _componentMask
+   */
+  this._componentMask = makr.MAX_COMPONENTS <= 32
+    ? new FastBitSet()
+    : new BitSet(makr.MAX_COMPONENTS);
+
+  /**
+   * @private
+   * @property {Entity[]} _entities
+   */
+  this._entities = [];
+
+  /**
+   * @private
+   * @property {World} _world
+   */
+  this._world = null;
+
+  /**
+   * @property {Boolean} enabled
+   */
+  this.enabled = true;
+}
+
+/**
+ * @final
+ * @method registerComponent
+ * @param {Uint} type
+ */
+System.prototype.registerComponent = function(type) {
+  this._componentMask.set(type, 1);
+};
+
+/**
+ * @final
+ * @method update
+ * @param {Float} elapsed
+ */
+System.prototype.update = function(elapsed) {
+  if (this.enabled) {
+    this.onBegin();
+    this.processEntities(this._entities, elapsed);
+    this.onEnd();
+  }
+};
+
+/**
+ * @method processEntities
+ * @param {Entity[]} entities
+ * @param {Float} elapsed
+ */
+System.prototype.processEntities = function(entities, elapsed) {};
+
+/**
+ * @method onRegistered
+ */
+System.prototype.onRegistered = function() {};
+
+/**
+ * @method onBegin
+ */
+System.prototype.onBegin = function() {};
+
+/**
+ * Called after the end of processing.
+ *
+ * @method onEnd
+ */
+System.prototype.onEnd = function() {};
+
+/**
+ * Called when an entity is added to this system
+ *
+ * @method onAdded
+ * @param {Entity} entity
+ */
+System.prototype.onAdded = function(entity) {};
+
+/**
+ * Called when an entity is removed from this system
+ *
+ * @method onRemoved
+ * @param {Entity} entity
+ */
+System.prototype.onRemoved = function(entity) {};
+
+/**
+ * @private
+ * @method _addEntity
+ * @param {Entity} entity
+ */
+System.prototype._addEntity = function(entity) {
+  var entities = this._entities;
+  if (entities.indexOf(entity) < 0) {
+    entities.push(entity);
+    this.onAdded(entity);
+  }
+};
+
+/**
+ * @private
+ * @method _removeEntity
+ * @param {Entity} entity
+ */
+System.prototype._removeEntity = function(entity) {
+  var entities = this._entities;
+  var i = entities.indexOf(entity);
+  if (i >= 0) {
+    entities[i] = entities[entities.length - 1];
+    entities.pop();
+    this.onRemoved(entity);
+  }
+};
+
+/**
+ * @property {Boolean} world
+ */
+Object.defineProperty(System.prototype, 'world', {
+  get: function() {
+    return this._world;
+  }
+});
+
+module.exports = System;
+
+},{"./bit_set":2,"./fast_bit_set":4,"./global":5}],9:[function(require,module,exports){
+var Entity = require('./entity');
+
+/**
+ * The primary instance for the framework. It contains all the managers.
+ * You must use this to create, delete and retrieve entities.
+ *
+ * @final
+ * @class World
+ * @constructor
+ */
+function World() {
+  /**
+   * @private
+   * @property {System[]} _systems
+   */
+  this._systems = [];
+
+  /**
+   * @private
+   * @property {Uint} _nextEntityID
+   */
+  this._nextEntityID = 0;
+
+  this._nextGroupId = 0;
+  this._groups = [];
+  this._groupIDs = {};
+
+  /**
+   * @private
+   * @property {Entity[]} _alive
+   */
+  this._alive = [];
+
+  /**
+   * @private
+   * @property {Entity[]} _dead
+   */
+  this._dead = [];
+
+  /**
+   * @private
+   * @property {Entity[]} _removed
+   */
+  this._removed = [];
+
+  /**
+   * @private
+   * @property {Entity[]} _refreshed
+   */
+  this._refreshed = [];
+
+  /**
+   * @private
+   * @property {Object[][]} _componentBags
+   */
+  this._componentBags = [];
+}
+
+/**
+ * Registers the specified system.
+ *
+ * @method registerSystem
+ * @param {System} system
+ */
+World.prototype.registerSystem = function(system) {
+  if (this._systems.indexOf(system) >= 0) {
+    throw "Cannot register a system twice";
+  }
+
+  this._systems.push(system);
+
+  system._world = this;
+  system.onRegistered();
+};
+
+/**
+ * Creates a new entity.
+ *
+ * @method create
+ * @return {Entity}
+ */
+World.prototype.create = function() {
+  var entity;
+  if (this._dead.length > 0) {
+    // Revive entity
+    entity = this._dead.pop();
+    entity._alive = true;
+  } else {
+    entity = new Entity(this, this._nextEntityID++);
+  }
+
+  this._alive.push(entity);
+  return entity;
+};
+
+/**
+ * Kills the specified entity.
+ *
+ * @method kill
+ * @param {Entity} entity
+ */
+World.prototype.kill = function(entity) {
+  if (!entity._waitingForRemoval) {
+    entity._waitingForRemoval = true;
+    this._removed.push(entity);
+  }
+};
+
+/**
+ * Queues the entity to be refreshed.
+ *
+ * @method refresh
+ * @param {Entity} entity
+ */
+World.prototype.refresh = function(entity) {
+  if (!entity._waitingForRefresh) {
+    entity._waitingForRefresh = true;
+    this._refreshed.push(entity);
+  }
+};
+
+/**
+ * Updates all systems.
+ *
+ * @method update
+ * @param {Float} elapsed
+ */
+World.prototype.update = function(elapsed) {
+  // Process entities
+  this.loopStart();
+
+  var systems = this._systems;
+  var i = 0;
+  var n = systems.length;
+
+  for (; i < n; i++) {
+    systems[i].update(elapsed);
+  }
+};
+
+/**
+ * Processes all queued entities.
+ *
+ * @method loopStart
+ */
+World.prototype.loopStart = function() {
+  var i;
+
+  // Process entities queued for removal
+  for (i = this._removed.length; i--;) {
+    this._removeEntity(this._removed[i]);
+  }
+
+  this._removed.length = 0;
+
+  // Process entities queued for refresh
+  for (i = this._refreshed.length; i--;) {
+    this._refreshEntity(this._refreshed[i]);
+  }
+
+  this._refreshed.length = 0;
+};
+
+/**
+ * Add the entity to the specified group.
+ *
+ * @method addToGroup
+ * @param {Entity} entity
+ * @param {String} groupName
+ */
+World.prototype.addToGroup = function(entity, groupName) {
+  var group;
+  var groupID = this._groupIDs[groupName];
+  if (groupID === undefined) {
+    groupID = this._groupIDs[groupName] = this._nextGroupId++;
+    group = this._groups[groupID] = [];
+  } else {
+    group = this._groups[groupID];
+  }
+
+  if (!entity._groupMask.get(groupID)) {
+    entity._groupMask.set(groupID, 1);
+    group.push(entity);
+  }
+};
+
+/**
+ * Remove the entity from the specified group.
+ *
+ * @method removeFromGroup
+ * @param {Entity} entity
+ * @param {String} groupName
+ */
+World.prototype.removeFromGroup = function(entity, groupName) {
+  var groupID = this._groupIDs[groupName];
+  if (groupID !== undefined) {
+    var group = this._groups[groupID];
+    if (entity._groupMask.get(groupID)) {
+      entity._groupMask.set(groupID, 0);
+      group[group.indexOf(entity)] = group[group.length - 1];
+      group.pop();
+    }
+  }
+};
+
+/**
+ * Remove the entity from all groups.
+ *
+ * @method removeFromGroups
+ * @param {Entity} entity
+ */
+World.prototype.removeFromGroups = function(entity) {
+  for (var groupID = this._nextGroupId; groupID--;) {
+    if (entity._groupMask.get(groupID)) {
+      var group = this._groups[groupID];
+      group[group.indexOf(entity)] = group[group.length - 1];
+      group.pop();
+    }
+  }
+
+  entity._groupMask.reset();
+};
+
+/**
+ * Get all entities of the specified group.
+ *
+ * @method getEntitiesByGroup
+ * @param  {String} groupName
+ * @return {Entity[]}
+ */
+World.prototype.getEntitiesByGroup = function(groupName) {
+  var groupID = this._groupIDs[groupName];
+  return groupID !== undefined ? this._groups[groupID] : [];
+};
+
+/**
+ * Get whether the entity is in the specified group.
+ *
+ * @param  {Entity} entity
+ * @param  {String} groupName
+ * @return {Boolean}
+ */
+World.prototype.isInGroup = function(entity, groupName) {
+  var groupID = this._groupIDs[groupName];
+  return groupID !== undefined && entity._groupMask.get(groupID);
+};
+
+/**
+ * @private
+ * @method _refreshEntity
+ * @param {Entity} entity
+ */
+World.prototype._refreshEntity = function(entity) {
+  // Unset refresh flag
+  entity._waitingForRefresh = false;
+
+  var systems = this._systems;
+  var i = 0;
+  var n = systems.length;
+
+  for (; i < n; i++) {
+    var contains = entity._systemMask.get(i);
+    var interested = entity._componentMask.contains(systems[i]._componentMask);
+
+    if (contains && !interested) {
+      // Remove entity from the system
+      systems[i]._removeEntity(entity);
+      entity._systemMask.set(i, 0);
+    } else if (!contains && interested) {
+      // Add entity to the system
+      systems[i]._addEntity(entity);
+      entity._systemMask.set(i, 1);
+    }
+  }
+};
+
+/**
+ * @private
+ * @method _removeEntity
+ * @param {Entity} entity
+ */
+World.prototype._removeEntity = function(entity) {
+  if (entity._alive) {
+    // Unset removal flag
+    entity._waitingForRemoval = false;
+
+    // Murder the entity!
+    entity._alive = false;
+
+    // Remove from alive entities by swapping with the last entity
+    this._alive[this._alive.indexOf(entity)] = this._alive[this._alive.length - 1];
+    this._alive.pop();
+
+    // Add to dead entities
+    this._dead.push(entity);
+
+    // Reset component mask
+    entity._componentMask.reset();
+
+    // Remove from groups
+    this.removeFromGroups(entity);
+
+    // Refresh entity
+    this._refreshEntity(entity);
+  }
+};
+
+/**
+ * @private
+ * @method _getComponent
+ * @param  {Entity} entity
+ * @param  {Uint} type
+ * @return {Object}
+ */
+World.prototype._getComponent = function(entity, type) {
+  if (entity._componentMask.get(type)) {
+    return this._componentBags[entity._id][type];
+  }
+
+  return null;
+};
+
+/**
+ * @private
+ * @method _addComponent
+ * @param {Entity} entity
+ * @param {Object} component
+ * @param {type} type
+ */
+World.prototype._addComponent = function(entity, component, type) {
+  entity._componentMask.set(type, 1);
+
+  this._componentBags[entity._id] || (this._componentBags[entity._id] = []);
+  this._componentBags[entity._id][type] = component;
+
+  this.refresh(entity);
+};
+
+/**
+ * @private
+ * @method _removeComponent
+ * @param {Entity} entity
+ * @param {Uint} type
+ */
+World.prototype._removeComponent = function(entity, type) {
+  entity._componentMask.set(type, 0);
+  this.refresh(entity);
+};
+
+/**
+ * @private
+ * @method _removeComponents
+ * @param {Entity} entity
+ */
+World.prototype._removeComponents = function(entity) {
+  entity._componentMask.reset();
+  this.refresh(entity);
+};
+
+module.exports = World;
+
+},{"./entity":3}],10:[function(require,module,exports){
 'use strict';
 
-var makr = require('makrjs');
+var makr = require('makr');
 
 function System() {
     makr.IteratingSystem.call(this);
@@ -59,7 +901,7 @@ System.prototype.getComponent = function(component) {
 
 module.exports = System;
 
-},{"makrjs":2}],4:[function(require,module,exports){
+},{"makr":6}],11:[function(require,module,exports){
 var utils = module.exports = {};
 
 utils.ComponentRegister = (function() {
@@ -102,8 +944,8 @@ utils.inherits = function(ctor, superCtor, methods) {
     }
 };
 
-},{}],5:[function(require,module,exports){
-var makr = require('makrjs'),
+},{}],12:[function(require,module,exports){
+var makr = require('makr'),
     System = require('./system'),
     utils = require('./utils');
 
@@ -128,5 +970,5 @@ World.prototype.registerComponent = function(component) {
 
 module.exports = World;
 
-},{"./system":3,"./utils":4,"makrjs":2}]},{},[1])(1)
+},{"./system":10,"./utils":11,"makr":6}]},{},[1])(1)
 });

@@ -1,4 +1,4 @@
-var makr = require('makrjs'),
+var makr = require('makr'),
     System = require('./system'),
     utils = require('./utils');
 

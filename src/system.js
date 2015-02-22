@@ -1,6 +1,6 @@
 'use strict';
 
-var makr = require('makrjs');
+var makr = require('makr');
 
 function System() {
     makr.IteratingSystem.call(this);
