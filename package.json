@@ -1,6 +1,6 @@
 {
   "name": "phaser-ecs",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "An ECS implementation for phaser",
   "author": "Wouter Commandeur <wouter@ctlaltdel.nl>",
   "license": "MIT",
@@ -19,7 +19,7 @@
     "ecs"
   ],
   "dependencies": {
-    "makrjs": "0.1.1-snapshot"
+    "makr": "1.0.1"
   },
   "devDependencies": {
     "browserify": "^5.11.1",
